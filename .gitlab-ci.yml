@@ -4,6 +4,7 @@ image:
 pages:
   stage: deploy
   script:
+    - apt-get update && apt-get install -y python3
     - quarto render
     - mv _output public
   artifacts:
