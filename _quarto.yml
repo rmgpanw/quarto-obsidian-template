@@ -1,0 +1,38 @@
+project:
+  type: website
+  output-dir: _output
+  render:
+    - "*.qmd"
+    - "notes/*.md"
+    - "notes/*.qmd"
+  pre-render:
+    - python3 scripts/build-graph.py
+
+website:
+  title: "My Notes"
+  search: true
+  repo-url: https://github.com/rmgpanw/quarto-obsidian-template
+  repo-actions: [source]
+  repo-branch: main
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: listing.qmd
+        text: Notes
+      - href: graph.qmd
+        text: Graph
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    toc: true
+    toc-depth: 3
+
+bibliography: references.bib
+csl: vancouver.csl
+
+filters:
+  - scripts/wikilinks.lua

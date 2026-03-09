@@ -1,0 +1,23 @@
+_output/
+.quarto/
+_graph-data.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# R
+.Rhistory
+.Rdata
+.RData
+.Rproj.user/
+
+# Editor
+*.swp
+*.swo
+*~
+
+/.quarto/
+
+# Claude Code
+.claude/

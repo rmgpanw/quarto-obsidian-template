@@ -1,0 +1,11 @@
+---
+title: "Notes"
+listing:
+  contents:
+    - "notes/*.md"
+    - "notes/*.qmd"
+  type: default
+  sort: "date desc"
+  categories: true
+  fields: [title, author, date, categories]
+---

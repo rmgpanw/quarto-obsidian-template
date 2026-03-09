@@ -1,0 +1,257 @@
+---
+title: "Graph View"
+toc: false
+---
+
+```{ojs}
+//| echo: false
+
+graph = FileAttachment("_graph-data.json").json()
+d3 = require("d3@7")
+
+// ── Controls ──────────────────────────────────────────────────
+viewof searchTerm = Inputs.text({label: "Search", placeholder: "Filter nodes…", width: 220})
+viewof showOrphans = Inputs.toggle({label: "Orphan nodes", value: true})
+viewof showArrows  = Inputs.toggle({label: "Arrows", value: true})
+viewof showLabels  = Inputs.toggle({label: "Labels", value: true})
+viewof showTags    = Inputs.toggle({label: "Tag nodes", value: false})
+viewof tagFilter   = Inputs.select(["all", ...graph.tags], {label: "Filter by tag", value: "all"})
+viewof repelForce  = Inputs.range([-600, -50], {label: "Repel force", step: 10, value: -300})
+viewof linkDist    = Inputs.range([40, 300],   {label: "Link distance", step: 10, value: 120})
+
+// ── Graph rendering ──────────────────────────────────────────
+chart = {
+  // --- Prepare data (deep-copy so reactivity works) ---
+  let nodes = graph.nodes.map(d => ({...d}));
+  let links = graph.links.map(d => ({...d}));
+
+  // Degree map (on full data, before filtering)
+  const degree = new Map(nodes.map(n => [n.id, 0]));
+  for (const l of links) {
+    degree.set(l.source, (degree.get(l.source) || 0) + 1);
+    degree.set(l.target, (degree.get(l.target) || 0) + 1);
+  }
+
+  // --- Apply filters ---
+  // Tag filter
+  if (tagFilter !== "all") {
+    const keep = new Set(nodes.filter(n => n.tags.includes(tagFilter)).map(n => n.id));
+    nodes = nodes.filter(n => keep.has(n.id));
+    links = links.filter(l => keep.has(l.source) && keep.has(l.target));
+  }
+
+  // Orphan filter
+  if (!showOrphans) {
+    const linked = new Set();
+    for (const l of links) { linked.add(l.source); linked.add(l.target); }
+    nodes = nodes.filter(n => linked.has(n.id));
+  }
+
+  // Search highlight
+  const searchLower = searchTerm.toLowerCase();
+  const matchesSearch = (n) =>
+    !searchTerm || n.title.toLowerCase().includes(searchLower) || n.id.toLowerCase().includes(searchLower) ||
+    n.tags.some(t => t.toLowerCase().includes(searchLower));
+
+  // --- Add tag nodes if toggled ---
+  if (showTags) {
+    const activeNodeIds = new Set(nodes.map(n => n.id));
+    const tagsSeen = new Set();
+    for (const n of nodes) {
+      for (const t of n.tags) {
+        if (!tagsSeen.has(t)) {
+          tagsSeen.add(t);
+          nodes.push({ id: `tag:${t}`, title: `#${t}`, file: null, tags: [], _isTag: true });
+        }
+        links.push({ source: n.id, target: `tag:${t}` });
+      }
+    }
+  }
+
+  // Radius scale
+  const maxDeg = d3.max([...degree.values(), 1]);
+  const radiusScale = d3.scaleSqrt().domain([0, maxDeg]).range([5, 18]);
+  nodes.forEach(n => {
+    n.radius = n._isTag ? 6 : radiusScale(degree.get(n.id) || 0);
+  });
+
+  const nodeIds = new Set(nodes.map(n => n.id));
+  links = links.filter(l => nodeIds.has(l.source) && nodeIds.has(l.target));
+
+  // --- SVG setup ---
+  const width = 900;
+  const height = 560;
+
+  const svg = d3.create("svg")
+    .attr("viewBox", [0, 0, width, height])
+    .attr("width", "100%")
+    .attr("height", height)
+    .style("max-width", "100%")
+    .style("background", "var(--bs-body-bg, #fff)")
+    .style("border-radius", "8px")
+    .style("border", "1px solid var(--bs-border-color, #dee2e6)")
+    .style("cursor", "grab");
+
+  // Container for zoom/pan
+  const g = svg.append("g");
+
+  // Zoom behaviour
+  const zoom = d3.zoom()
+    .scaleExtent([0.2, 5])
+    .on("zoom", (event) => g.attr("transform", event.transform));
+  svg.call(zoom);
+
+  // Arrowhead marker
+  if (showArrows) {
+    svg.append("defs").append("marker")
+      .attr("id", "arrow")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 24).attr("refY", 0)
+      .attr("markerWidth", 6).attr("markerHeight", 6)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("fill", "var(--bs-secondary, #6c757d)");
+  }
+
+  // --- Simulation ---
+  const simulation = d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(links).id(d => d.id).distance(linkDist))
+    .force("charge", d3.forceManyBody().strength(repelForce))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("collision", d3.forceCollide().radius(d => d.radius + 10));
+
+  // --- Draw links ---
+  const link = g.append("g")
+    .selectAll("line")
+    .data(links).join("line")
+    .attr("stroke", "var(--bs-secondary, #6c757d)")
+    .attr("stroke-opacity", 0.4)
+    .attr("stroke-width", 1.5)
+    .attr("marker-end", showArrows ? "url(#arrow)" : null);
+
+  // --- Draw nodes ---
+  const node = g.append("g")
+    .selectAll("g")
+    .data(nodes).join("g")
+    .call(drag(simulation));
+
+  // Node colour
+  const nodeColor = (d) => {
+    if (d._isTag) return "var(--bs-success, #198754)";
+    if (!d.file) return "var(--bs-warning, #ffc107)";
+    return "var(--bs-primary, #0d6efd)";
+  };
+
+  node.append("circle")
+    .attr("r", d => d.radius)
+    .attr("fill", nodeColor)
+    .attr("stroke", "var(--bs-body-bg, #fff)")
+    .attr("stroke-width", 2)
+    .attr("opacity", d => matchesSearch(d) ? 1 : 0.2);
+
+  // Labels
+  if (showLabels) {
+    node.append("text")
+      .text(d => d.title)
+      .attr("x", d => d.radius + 4)
+      .attr("y", 4)
+      .attr("font-size", d => d._isTag ? "10px" : "12px")
+      .attr("font-style", d => d._isTag ? "italic" : "normal")
+      .attr("fill", "var(--bs-body-color, #212529)")
+      .attr("opacity", d => matchesSearch(d) ? 1 : 0.15)
+      .style("pointer-events", "none");
+  }
+
+  // Click to navigate
+  node.style("cursor", d => d.file ? "pointer" : "default")
+    .on("click", (event, d) => {
+      if (d.file) window.location.href = d.file.replace(/\.(qmd|md)$/, ".html");
+    });
+
+  // Tooltip
+  node.append("title").text(d => {
+    let tip = d.title;
+    if (d.tags && d.tags.length) tip += `\nTags: ${d.tags.join(", ")}`;
+    tip += `\nConnections: ${degree.get(d.id) || 0}`;
+    return tip;
+  });
+
+  // --- Hover: highlight neighbours, dim rest ---
+  const linkedByIndex = new Set();
+  links.forEach(l => {
+    const src = typeof l.source === "object" ? l.source.id : l.source;
+    const tgt = typeof l.target === "object" ? l.target.id : l.target;
+    linkedByIndex.add(`${src}--${tgt}`);
+    linkedByIndex.add(`${tgt}--${src}`);
+  });
+  const isNeighbour = (a, b) => a === b || linkedByIndex.has(`${a}--${b}`);
+
+  node.on("mouseenter", (event, d) => {
+    node.select("circle").transition().duration(150)
+      .attr("opacity", o => isNeighbour(d.id, o.id) ? 1 : 0.1);
+    node.select("text").transition().duration(150)
+      .attr("opacity", o => isNeighbour(d.id, o.id) ? 1 : 0.05);
+    link.transition().duration(150)
+      .attr("stroke-opacity", l => {
+        const src = typeof l.source === "object" ? l.source.id : l.source;
+        const tgt = typeof l.target === "object" ? l.target.id : l.target;
+        return (src === d.id || tgt === d.id) ? 0.8 : 0.05;
+      });
+  }).on("mouseleave", () => {
+    node.select("circle").transition().duration(300)
+      .attr("opacity", o => matchesSearch(o) ? 1 : 0.2);
+    node.select("text").transition().duration(300)
+      .attr("opacity", o => matchesSearch(o) ? 1 : 0.15);
+    link.transition().duration(300).attr("stroke-opacity", 0.4);
+  });
+
+  // --- Tick ---
+  simulation.on("tick", () => {
+    link
+      .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+    node.attr("transform", d => `translate(${d.x},${d.y})`);
+  });
+
+  function drag(simulation) {
+    return d3.drag()
+      .on("start", (event, d) => {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x; d.fy = d.y;
+      })
+      .on("drag", (event, d) => { d.fx = event.x; d.fy = event.y; })
+      .on("end", (event, d) => {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null; d.fy = null;
+      });
+  }
+
+  // --- Reset zoom button ---
+  svg.append("g")
+    .attr("transform", `translate(${width - 40}, 20)`)
+    .style("cursor", "pointer")
+    .on("click", () => svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity))
+    .call(g => {
+      g.append("rect").attr("width", 28).attr("height", 28).attr("rx", 4)
+        .attr("fill", "var(--bs-body-bg, #fff)")
+        .attr("stroke", "var(--bs-border-color, #dee2e6)");
+      g.append("text").text("⌂").attr("x", 6).attr("y", 20)
+        .attr("font-size", "18px").attr("fill", "var(--bs-body-color, #212529)");
+    });
+
+  return svg.node();
+}
+```
+
+::: {.callout-tip collapse="true"}
+## How to use
+
+- **Zoom**: scroll wheel or pinch; **Pan**: click and drag the background
+- **Drag nodes** to rearrange; **Click** a node to navigate to that note
+- **Hover** a node to highlight its direct connections
+- **Search** filters nodes by title, filename, or tag
+- **Reset zoom** with the ⌂ button (top-right of graph)
+
+**Legend:** <span style="color:var(--bs-primary)">●</span> note &nbsp; <span style="color:var(--bs-warning)">●</span> unresolved link &nbsp; <span style="color:var(--bs-success)">●</span> tag node
+:::

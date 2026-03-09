@@ -1,0 +1,12 @@
+---
+title: "My Notes"
+---
+
+Welcome to My Notes, rendered from an [Obsidian](https://obsidian.md/) vault using [Quarto](https://quarto.org/).
+
+- Browse all notes on the [Notes](listing.qmd) page
+- Explore connections in the [Graph](graph.qmd) visualisation
+
+::: {.callout-note}
+These are **demo notes** that showcase template features. Replace them with your own content.
+:::

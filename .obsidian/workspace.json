@@ -1,0 +1,219 @@
+{
+  "main": {
+    "id": "a6b17a0ee8089a33",
+    "type": "split",
+    "children": [
+      {
+        "id": "072f5f98f55c5b57",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "32f296f13725dc5f",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          },
+          {
+            "id": "08a6ed0440a8468c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "notes/Untitled.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "f99841e9fed1d697",
+    "type": "split",
+    "children": [
+      {
+        "id": "7439a8159f8bfa16",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1ad4ed389c7ffcdc",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "f6107211327b93bb",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "6068175794c51a43",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "f9c0635c5a2f34a1",
+    "type": "split",
+    "children": [
+      {
+        "id": "453df863b1b5f8c9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d1ab1c0068a3ec54",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "notes/Untitled.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Untitled"
+            }
+          },
+          {
+            "id": "2dc294e5f2401d27",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "notes/Untitled.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Untitled"
+            }
+          },
+          {
+            "id": "d64a5ee9b99ad5a9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "d1001704e2be384b",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "7af61dc40c6449b7",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "notes/Untitled.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Untitled"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "08a6ed0440a8468c",
+  "lastOpenFiles": [
+    "_output/listings.json",
+    "_output/search.json",
+    "_output/_graph-data.json",
+    "_output/site_libs/quarto-search/quarto-search.js",
+    "_output/site_libs/quarto-search/fuse.min.js",
+    "_output/site_libs/quarto-search/autocomplete.umd.js",
+    "_output/site_libs/quarto-ojs/quarto-ojs.css",
+    "_output/site_libs/quarto-ojs/quarto-ojs-runtime.js",
+    "_output/site_libs/quarto-nav/quarto-nav.js",
+    "_output/site_libs/quarto-nav/headroom.min.js",
+    "_output/site_libs/quarto-listing/quarto-listing.js",
+    "_templates/Note.md",
+    "notes/Untitled.md",
+    "notes/demo-features.md",
+    "notes/hello-world.md",
+    "Untitled.md",
+    "notes/_template.md",
+    "CLAUDE.md",
+    "notes/anti-vegf-pregnancy.md"
+  ]
+}

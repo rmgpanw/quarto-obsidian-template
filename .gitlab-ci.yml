@@ -1,0 +1,13 @@
+image:
+  name: ghcr.io/quarto-dev/quarto-full:latest
+
+pages:
+  stage: deploy
+  script:
+    - quarto render
+    - mv _output public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
