@@ -20,7 +20,10 @@ git clone https://github.com/<your-username>/<your-repo>.git
 cd <your-repo>
 ```
 
-3. Update `repo-url` in `_quarto.yml` to point to your repository (this enables "View source" links on each page).
+3. Update `_quarto.yml` to point to your repository:
+   - `repo-url` - enables "View source" links on each page
+   - The navbar icon `href` under `right:` - links the repo icon in the navbar
+   - If hosting on GitLab instead of GitHub, change the icon from `github` to `gitlab`
 
 **With devcontainer (recommended):** Open in VS Code and reopen in container when prompted.
 

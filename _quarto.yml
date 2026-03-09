@@ -22,6 +22,10 @@ website:
         text: Notes
       - href: graph.qmd
         text: Graph
+    right:
+      - icon: github
+        href: https://github.com/rmgpanw/quarto-obsidian-template
+        aria-label: GitHub
 
 format:
   html:
