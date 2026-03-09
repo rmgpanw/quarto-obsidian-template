@@ -1,0 +1,107 @@
+[
+  {
+    "objectID": "notes/hello-world.html",
+    "href": "notes/hello-world.html",
+    "title": "Hello World",
+    "section": "",
+    "text": "This demo note shows how categories and the listing page work.\n\n\n\nEach note specifies tags in its YAML front matter. These appear in Obsidian’s tag pane and are automatically converted to Quarto categories for the listing page.\ntags: [demo, layout]\n\n\n\nThe home page (index.qmd) uses Quarto’s built-in listing feature to automatically display all notes in the notes/ directory. New notes are picked up automatically, with no need to manually update the home page.\n\n\n\nTo create a new note, copy notes/_template.md and fill in the YAML header. See the project README for full instructions.\n\n\n\n\nThis is a demo note showing categories and the listing page.\nSee demo-features for a demo of wikilinks and citations."
+  },
+  {
+    "objectID": "notes/hello-world.html#purpose",
+    "href": "notes/hello-world.html#purpose",
+    "title": "Hello World",
+    "section": "",
+    "text": "This demo note shows how categories and the listing page work."
+  },
+  {
+    "objectID": "notes/hello-world.html#categories",
+    "href": "notes/hello-world.html#categories",
+    "title": "Hello World",
+    "section": "",
+    "text": "Each note specifies tags in its YAML front matter. These appear in Obsidian’s tag pane and are automatically converted to Quarto categories for the listing page.\ntags: [demo, layout]"
+  },
+  {
+    "objectID": "notes/hello-world.html#listing-page",
+    "href": "notes/hello-world.html#listing-page",
+    "title": "Hello World",
+    "section": "",
+    "text": "The home page (index.qmd) uses Quarto’s built-in listing feature to automatically display all notes in the notes/ directory. New notes are picked up automatically, with no need to manually update the home page."
+  },
+  {
+    "objectID": "notes/hello-world.html#template",
+    "href": "notes/hello-world.html#template",
+    "title": "Hello World",
+    "section": "",
+    "text": "To create a new note, copy notes/_template.md and fill in the YAML header. See the project README for full instructions."
+  },
+  {
+    "objectID": "notes/hello-world.html#summary",
+    "href": "notes/hello-world.html#summary",
+    "title": "Hello World",
+    "section": "",
+    "text": "This is a demo note showing categories and the listing page.\nSee demo-features for a demo of wikilinks and citations."
+  },
+  {
+    "objectID": "listing.html",
+    "href": "listing.html",
+    "title": "Notes",
+    "section": "",
+    "text": "Hello World\n\n\n\n\n\nMar 6, 2026\n\n\nYour Name\n\n\n\n\n\n\n\nDemo Features\n\n\n\n\n\nMar 5, 2026\n\n\nYour Name\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "graph.html",
+    "href": "graph.html",
+    "title": "Graph View",
+    "section": "",
+    "text": "graph = FileAttachment(\"_graph-data.json\").json()\nd3 = require(\"d3@7\")\n\n// ── Controls ──────────────────────────────────────────────────\nviewof searchTerm = Inputs.text({label: \"Search\", placeholder: \"Filter nodes…\", width: 220})\nviewof showOrphans = Inputs.toggle({label: \"Orphan nodes\", value: true})\nviewof showArrows  = Inputs.toggle({label: \"Arrows\", value: true})\nviewof showLabels  = Inputs.toggle({label: \"Labels\", value: true})\nviewof showTags    = Inputs.toggle({label: \"Tag nodes\", value: false})\nviewof tagFilter   = Inputs.select([\"all\", ...graph.tags], {label: \"Filter by tag\", value: \"all\"})\nviewof repelForce  = Inputs.range([-600, -50], {label: \"Repel force\", step: 10, value: -300})\nviewof linkDist    = Inputs.range([40, 300],   {label: \"Link distance\", step: 10, value: 120})\n\n// ── Graph rendering ──────────────────────────────────────────\nchart = {\n  // --- Prepare data (deep-copy so reactivity works) ---\n  let nodes = graph.nodes.map(d =&gt; ({...d}));\n  let links = graph.links.map(d =&gt; ({...d}));\n\n  // Degree map (on full data, before filtering)\n  const degree = new Map(nodes.map(n =&gt; [n.id, 0]));\n  for (const l of links) {\n    degree.set(l.source, (degree.get(l.source) || 0) + 1);\n    degree.set(l.target, (degree.get(l.target) || 0) + 1);\n  }\n\n  // --- Apply filters ---\n  // Tag filter\n  if (tagFilter !== \"all\") {\n    const keep = new Set(nodes.filter(n =&gt; n.tags.includes(tagFilter)).map(n =&gt; n.id));\n    nodes = nodes.filter(n =&gt; keep.has(n.id));\n    links = links.filter(l =&gt; keep.has(l.source) && keep.has(l.target));\n  }\n\n  // Orphan filter\n  if (!showOrphans) {\n    const linked = new Set();\n    for (const l of links) { linked.add(l.source); linked.add(l.target); }\n    nodes = nodes.filter(n =&gt; linked.has(n.id));\n  }\n\n  // Search highlight\n  const searchLower = searchTerm.toLowerCase();\n  const matchesSearch = (n) =&gt;\n    !searchTerm || n.title.toLowerCase().includes(searchLower) || n.id.toLowerCase().includes(searchLower) ||\n    n.tags.some(t =&gt; t.toLowerCase().includes(searchLower));\n\n  // --- Add tag nodes if toggled ---\n  if (showTags) {\n    const activeNodeIds = new Set(nodes.map(n =&gt; n.id));\n    const tagsSeen = new Set();\n    for (const n of nodes) {\n      for (const t of n.tags) {\n        if (!tagsSeen.has(t)) {\n          tagsSeen.add(t);\n          nodes.push({ id: `tag:${t}`, title: `#${t}`, file: null, tags: [], _isTag: true });\n        }\n        links.push({ source: n.id, target: `tag:${t}` });\n      }\n    }\n  }\n\n  // Radius scale\n  const maxDeg = d3.max([...degree.values(), 1]);\n  const radiusScale = d3.scaleSqrt().domain([0, maxDeg]).range([5, 18]);\n  nodes.forEach(n =&gt; {\n    n.radius = n._isTag ? 6 : radiusScale(degree.get(n.id) || 0);\n  });\n\n  const nodeIds = new Set(nodes.map(n =&gt; n.id));\n  links = links.filter(l =&gt; nodeIds.has(l.source) && nodeIds.has(l.target));\n\n  // --- SVG setup ---\n  const width = 900;\n  const height = 560;\n\n  const svg = d3.create(\"svg\")\n    .attr(\"viewBox\", [0, 0, width, height])\n    .attr(\"width\", \"100%\")\n    .attr(\"height\", height)\n    .style(\"max-width\", \"100%\")\n    .style(\"background\", \"var(--bs-body-bg, #fff)\")\n    .style(\"border-radius\", \"8px\")\n    .style(\"border\", \"1px solid var(--bs-border-color, #dee2e6)\")\n    .style(\"cursor\", \"grab\");\n\n  // Container for zoom/pan\n  const g = svg.append(\"g\");\n\n  // Zoom behaviour\n  const zoom = d3.zoom()\n    .scaleExtent([0.2, 5])\n    .on(\"zoom\", (event) =&gt; g.attr(\"transform\", event.transform));\n  svg.call(zoom);\n\n  // Arrowhead marker\n  if (showArrows) {\n    svg.append(\"defs\").append(\"marker\")\n      .attr(\"id\", \"arrow\")\n      .attr(\"viewBox\", \"0 -5 10 10\")\n      .attr(\"refX\", 24).attr(\"refY\", 0)\n      .attr(\"markerWidth\", 6).attr(\"markerHeight\", 6)\n      .attr(\"orient\", \"auto\")\n      .append(\"path\")\n      .attr(\"d\", \"M0,-5L10,0L0,5\")\n      .attr(\"fill\", \"var(--bs-secondary, #6c757d)\");\n  }\n\n  // --- Simulation ---\n  const simulation = d3.forceSimulation(nodes)\n    .force(\"link\", d3.forceLink(links).id(d =&gt; d.id).distance(linkDist))\n    .force(\"charge\", d3.forceManyBody().strength(repelForce))\n    .force(\"center\", d3.forceCenter(width / 2, height / 2))\n    .force(\"collision\", d3.forceCollide().radius(d =&gt; d.radius + 10));\n\n  // --- Draw links ---\n  const link = g.append(\"g\")\n    .selectAll(\"line\")\n    .data(links).join(\"line\")\n    .attr(\"stroke\", \"var(--bs-secondary, #6c757d)\")\n    .attr(\"stroke-opacity\", 0.4)\n    .attr(\"stroke-width\", 1.5)\n    .attr(\"marker-end\", showArrows ? \"url(#arrow)\" : null);\n\n  // --- Draw nodes ---\n  const node = g.append(\"g\")\n    .selectAll(\"g\")\n    .data(nodes).join(\"g\")\n    .call(drag(simulation));\n\n  // Node colour\n  const nodeColor = (d) =&gt; {\n    if (d._isTag) return \"var(--bs-success, #198754)\";\n    if (!d.file) return \"var(--bs-warning, #ffc107)\";\n    return \"var(--bs-primary, #0d6efd)\";\n  };\n\n  node.append(\"circle\")\n    .attr(\"r\", d =&gt; d.radius)\n    .attr(\"fill\", nodeColor)\n    .attr(\"stroke\", \"var(--bs-body-bg, #fff)\")\n    .attr(\"stroke-width\", 2)\n    .attr(\"opacity\", d =&gt; matchesSearch(d) ? 1 : 0.2);\n\n  // Labels\n  if (showLabels) {\n    node.append(\"text\")\n      .text(d =&gt; d.title)\n      .attr(\"x\", d =&gt; d.radius + 4)\n      .attr(\"y\", 4)\n      .attr(\"font-size\", d =&gt; d._isTag ? \"10px\" : \"12px\")\n      .attr(\"font-style\", d =&gt; d._isTag ? \"italic\" : \"normal\")\n      .attr(\"fill\", \"var(--bs-body-color, #212529)\")\n      .attr(\"opacity\", d =&gt; matchesSearch(d) ? 1 : 0.15)\n      .style(\"pointer-events\", \"none\");\n  }\n\n  // Click to navigate\n  node.style(\"cursor\", d =&gt; d.file ? \"pointer\" : \"default\")\n    .on(\"click\", (event, d) =&gt; {\n      if (d.file) window.location.href = d.file.replace(/\\.(qmd|md)$/, \".html\");\n    });\n\n  // Tooltip\n  node.append(\"title\").text(d =&gt; {\n    let tip = d.title;\n    if (d.tags && d.tags.length) tip += `\\nTags: ${d.tags.join(\", \")}`;\n    tip += `\\nConnections: ${degree.get(d.id) || 0}`;\n    return tip;\n  });\n\n  // --- Hover: highlight neighbours, dim rest ---\n  const linkedByIndex = new Set();\n  links.forEach(l =&gt; {\n    const src = typeof l.source === \"object\" ? l.source.id : l.source;\n    const tgt = typeof l.target === \"object\" ? l.target.id : l.target;\n    linkedByIndex.add(`${src}--${tgt}`);\n    linkedByIndex.add(`${tgt}--${src}`);\n  });\n  const isNeighbour = (a, b) =&gt; a === b || linkedByIndex.has(`${a}--${b}`);\n\n  node.on(\"mouseenter\", (event, d) =&gt; {\n    node.select(\"circle\").transition().duration(150)\n      .attr(\"opacity\", o =&gt; isNeighbour(d.id, o.id) ? 1 : 0.1);\n    node.select(\"text\").transition().duration(150)\n      .attr(\"opacity\", o =&gt; isNeighbour(d.id, o.id) ? 1 : 0.05);\n    link.transition().duration(150)\n      .attr(\"stroke-opacity\", l =&gt; {\n        const src = typeof l.source === \"object\" ? l.source.id : l.source;\n        const tgt = typeof l.target === \"object\" ? l.target.id : l.target;\n        return (src === d.id || tgt === d.id) ? 0.8 : 0.05;\n      });\n  }).on(\"mouseleave\", () =&gt; {\n    node.select(\"circle\").transition().duration(300)\n      .attr(\"opacity\", o =&gt; matchesSearch(o) ? 1 : 0.2);\n    node.select(\"text\").transition().duration(300)\n      .attr(\"opacity\", o =&gt; matchesSearch(o) ? 1 : 0.15);\n    link.transition().duration(300).attr(\"stroke-opacity\", 0.4);\n  });\n\n  // --- Tick ---\n  simulation.on(\"tick\", () =&gt; {\n    link\n      .attr(\"x1\", d =&gt; d.source.x).attr(\"y1\", d =&gt; d.source.y)\n      .attr(\"x2\", d =&gt; d.target.x).attr(\"y2\", d =&gt; d.target.y);\n    node.attr(\"transform\", d =&gt; `translate(${d.x},${d.y})`);\n  });\n\n  function drag(simulation) {\n    return d3.drag()\n      .on(\"start\", (event, d) =&gt; {\n        if (!event.active) simulation.alphaTarget(0.3).restart();\n        d.fx = d.x; d.fy = d.y;\n      })\n      .on(\"drag\", (event, d) =&gt; { d.fx = event.x; d.fy = event.y; })\n      .on(\"end\", (event, d) =&gt; {\n        if (!event.active) simulation.alphaTarget(0);\n        d.fx = null; d.fy = null;\n      });\n  }\n\n  // --- Reset zoom button ---\n  svg.append(\"g\")\n    .attr(\"transform\", `translate(${width - 40}, 20)`)\n    .style(\"cursor\", \"pointer\")\n    .on(\"click\", () =&gt; svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity))\n    .call(g =&gt; {\n      g.append(\"rect\").attr(\"width\", 28).attr(\"height\", 28).attr(\"rx\", 4)\n        .attr(\"fill\", \"var(--bs-body-bg, #fff)\")\n        .attr(\"stroke\", \"var(--bs-border-color, #dee2e6)\");\n      g.append(\"text\").text(\"⌂\").attr(\"x\", 6).attr(\"y\", 20)\n        .attr(\"font-size\", \"18px\").attr(\"fill\", \"var(--bs-body-color, #212529)\");\n    });\n\n  return svg.node();\n}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nTipHow to use\n\n\n\n\n\n\nZoom: scroll wheel or pinch; Pan: click and drag the background\nDrag nodes to rearrange; Click a node to navigate to that note\nHover a node to highlight its direct connections\nSearch filters nodes by title, filename, or tag\nReset zoom with the ⌂ button (top-right of graph)\n\nLegend: ● note   ● unresolved link   ● tag node"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "My Notes",
+    "section": "",
+    "text": "Welcome to My Notes, rendered from an Obsidian vault using Quarto.\n\nBrowse all notes on the Notes page\nExplore connections in the Graph visualisation\n\n\n\n\n\n\n\nNote\n\n\n\nThese are demo notes that showcase template features. Replace them with your own content."
+  },
+  {
+    "objectID": "notes/demo-features.html",
+    "href": "notes/demo-features.html",
+    "title": "Demo Features",
+    "section": "",
+    "text": "This demo note shows how wikilinks and citations work in this project.\n\n\n\nObsidian-style [[wikilinks]] are automatically converted to standard links at render time by a Lua filter (scripts/wikilinks.lua). Source files are never modified.\nPlain wikilink: Link to another note using [[note-filename]] syntax, for example, [[hello-world]].\nAliased wikilink: Use [[target|display text]] to customise the link text, for example, [[hello-world|the other demo note]].\n\n\n\nCitations use Pandoc’s @citekey syntax, referencing entries in references.bib. For example, (1) is a fictitious reference used here purely to show how inline citations render. Multiple citations can be grouped (1,2).\n\n\n\n\nThis is a demo note showing wikilinks and citations.\nSee hello-world for another feature demo.\n\n\n\n\n\n\n1. Demo AB, Example CD. A fictitious article for demonstration purposes only. Journal of Placeholder Studies 2025;1(1). :1–10. doi: 10.1234/fake-doi-demo-2025\n\n\n2. Example CD, Test EF. Another fictitious article used to demonstrate citation rendering. Annals of Dummy Research 2024;42(3). :100–105. doi: 10.1234/fake-doi-example-2024"
+  },
+  {
+    "objectID": "notes/demo-features.html#purpose",
+    "href": "notes/demo-features.html#purpose",
+    "title": "Demo Features",
+    "section": "",
+    "text": "This demo note shows how wikilinks and citations work in this project."
+  },
+  {
+    "objectID": "notes/demo-features.html#wikilinks",
+    "href": "notes/demo-features.html#wikilinks",
+    "title": "Demo Features",
+    "section": "",
+    "text": "Obsidian-style [[wikilinks]] are automatically converted to standard links at render time by a Lua filter (scripts/wikilinks.lua). Source files are never modified.\nPlain wikilink: Link to another note using [[note-filename]] syntax, for example, [[hello-world]].\nAliased wikilink: Use [[target|display text]] to customise the link text, for example, [[hello-world|the other demo note]]."
+  },
+  {
+    "objectID": "notes/demo-features.html#citations",
+    "href": "notes/demo-features.html#citations",
+    "title": "Demo Features",
+    "section": "",
+    "text": "Citations use Pandoc’s @citekey syntax, referencing entries in references.bib. For example, (1) is a fictitious reference used here purely to show how inline citations render. Multiple citations can be grouped (1,2)."
+  },
+  {
+    "objectID": "notes/demo-features.html#summary",
+    "href": "notes/demo-features.html#summary",
+    "title": "Demo Features",
+    "section": "",
+    "text": "This is a demo note showing wikilinks and citations.\nSee hello-world for another feature demo."
+  },
+  {
+    "objectID": "notes/demo-features.html#references",
+    "href": "notes/demo-features.html#references",
+    "title": "Demo Features",
+    "section": "",
+    "text": "1. Demo AB, Example CD. A fictitious article for demonstration purposes only. Journal of Placeholder Studies 2025;1(1). :1–10. doi: 10.1234/fake-doi-demo-2025\n\n\n2. Example CD, Test EF. Another fictitious article used to demonstrate citation rendering. Annals of Dummy Research 2024;42(3). :100–105. doi: 10.1234/fake-doi-example-2024"
+  }
+]

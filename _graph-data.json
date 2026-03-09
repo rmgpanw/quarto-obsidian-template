@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {
+      "id": "demo-features",
+      "title": "Demo Features",
+      "file": "notes/demo-features.md",
+      "tags": [
+        "demo",
+        "features"
+      ]
+    },
+    {
+      "id": "hello-world",
+      "title": "Hello World",
+      "file": "notes/hello-world.md",
+      "tags": []
+    }
+  ],
+  "links": [
+    {
+      "source": "demo-features",
+      "target": "hello-world"
+    }
+  ],
+  "tags": [
+    "demo",
+    "features"
+  ]
+}
