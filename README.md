@@ -105,8 +105,16 @@ This produces the site in `_output/`.
 
 ### GitHub Pages
 
-A GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically builds and deploys to GitHub Pages on push to `main`. Enable GitHub Pages in your repository settings and set the source to the `gh-pages` branch.
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically builds and deploys to GitHub Pages on push to `main`. Enable GitHub Pages in your repository settings and set the source to the `gh-pages` branch. Each deployment uses a force orphan push, so the `gh-pages` branch never accumulates history.
 
 ### GitLab Pages
 
-A GitLab CI configuration (`.gitlab-ci.yml`) is also included. It renders the site and deploys to GitLab Pages on push to the default branch. No additional configuration is needed beyond enabling Pages in your GitLab project settings.
+A GitLab CI configuration (`.gitlab-ci.yml`) is also included. It renders the site and deploys to GitLab Pages on push to the default branch. No additional configuration is needed beyond enabling Pages in your GitLab project settings. GitLab Pages uses build artifacts rather than a branch, so there is no history accumulation.
+
+### GitLab mirroring
+
+A GitHub Actions workflow (`.github/workflows/mirror-gitlab.yml`) automatically pushes all branches and tags to a GitLab mirror on every push. To set this up:
+
+1. Create a GitLab project with the same name.
+2. Create a GitLab Personal Access Token with `write_repository` scope.
+3. Add it as a GitHub Actions secret named `GITLAB_TOKEN`.
